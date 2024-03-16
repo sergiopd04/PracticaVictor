@@ -1,34 +1,51 @@
 <?php
+require __DIR__."/../inc/BDConnectionSingleton.php";
 
-include 'conexion.php';
-
-class Paciente{
-    private $id;
+/**
+ * Class Medico
+ * Clase Modelo  de ejemplo para realizar las operaciones necesarias para interacturar con la BD
+ * Nunca debe hacer "echo" ni ninguna operación que muestre información. Toda la información
+ * será devuelta por el "return" y tratada/utilizada desde el servicio web
+ *
+ * @since 10/11/2022
+ * @author Víctor Sarabia
+ * @version 1.0.0
+ */
+class Medico
+{
+    // Atributos
     private $sip;
-    private $dni;
     private $nombre;
-    private $apellido1;
-    private $pdo;
-    private static final $TABLE_NAME = 'pacientes';
 
-
-    function __construct($id=null, $sip=null, $dni=null, $nombre=null, $apellido1=null){
-        $this-> id = $id;
-        $this-> sip = $sip;
-        $this->dni = $dni;
+    /**
+     * Medico constructor.
+     * @param $sip
+     * @param $nombre
+     */
+    public function __construct($sip=null, $nombre=null)
+    {
+        $this->sip = $sip;
         $this->nombre = $nombre;
-        $this->apellido1 = $apellido1;
     }
 
-    public static function find($filters=[], $pagina=0, $num_registros=10){
-        try{
+    /**
+     * Realiza búsquedas de médicos en BD por los filtros indicados.
+     *
+     * @param array $filters Array Asociativo con los filtros necesxarios
+     * @param int Página solicitada
+     * @param int Número de registros a devolver por página
+     * @return array Array asociativo con el listado de médicos
+     * @throws Exception
+     */
+    public static function find($filters=[], $apgina=0, $num_registros=10){
+        try {
             $pdo = BDConnectionSingleton::getInstance();
 
             $sql = 'select * FROM pacientes where true';
             $params = [];
-            if(isset($filters["id"])) {
-                $sql.=" and id like :id";
-                $params[":id"]="%".$filters["id"]."%";
+            if(isset($filters["sip"])) {
+                $sql.=" and sip like :sip";
+                $params[":sip"]="%".$filters["sip"]."%";
             }
             if(isset($filters["nombre"])) {
                 $sql.=" and nombre like :nombre";
@@ -44,61 +61,35 @@ class Paciente{
             $pdo = null;
 
             return $pacientes;
-        } catch (PDOException $p){
-            throw $p;
+        }
+        catch(PDOException $e) {
+            throw new Exception($e);
         }
     }
 
-    public function delete() {
-        try {
-            $pdo = BDConnectionSingleton::getInstance();
 
-            $sql = 'DELETE FROM ' . self::$TABLE_NAME . 'WHERE id = :id';
-    
-            $stmt = $pdo->prepare($sql);
-            $stmt->bindParam(':id', $this->id);
-            $stmt->execute();
-        } catch (PDOException $p) {
-            throw $p;
-        }
-    }
-
+    /**
+     * Inserta el objeto médico instanciado en BD
+     *
+     * @return mixed
+     * @throws Exception
+     */
     public function insert() {
-        try{
-            $pdo = BDConnectionSingleton::getInstance();
-
-            $sql = 'INSERT INTO ' . self::$TABLE_NAME . ' (id,sip, dni, nombre, apellido1) VALUES (:id,:sip, :dni, :nombre, :apellido1)';
-            
-            $stmt = $pdo->prepare($sql);
-            $stmt->bindParam(':id', $this->id);
-            $stmt->bindParam(':sip', $this->sip);
-            $stmt->bindParam(':dni', $this->dni);
-            $stmt->bindParam(':nombre', $this->nombre);
-            $stmt->bindParam(':apellido1', $this->apellido1);
-            
-            $stmt->execute();
-        } catch (PDOException $p) {
-            throw $p;
-        }
-    }
-
-    public function editar(){
         try {
             $pdo = BDConnectionSingleton::getInstance();
-            $sql = 'UPDATE ' . self::$TABLE_NAME . ' SET sip = :sip, dni = :dni, nombre = :nombre, apellido1 = :apellido1 WHERE id = :id';
-    
+
+            // Nombre Obligatorio en BD
+            if (empty($this->nombre))
+                throw new Exception("El nombre es obligatorio.");
+
+            $sql = "insert into medico values (null, :nombre ...)";
             $stmt = $pdo->prepare($sql);
-            $stmt->bindParam(':id', $this->id);
-            $stmt->bindParam(':sip', $this->sip);
-            $stmt->bindParam(':dni', $this->dni);
-            $stmt->bindParam(':nombre', $this->nombre);
-            $stmt->bindParam(':apellido1', $this->apellido1);
-    
-            $stmt->execute();
-        } catch (PDOException $p) {
-            throw $p;
+            $values = ["ID"=>$this->id, ":nombre"=>$this->name];
+            return $stmt->execute($values);
+
+        } catch (Exception $e) {
+            throw $e;
         }
     }
 
 }
-

@@ -1,61 +1,62 @@
+
 <?php
+require __DIR__."/models/Medico.php";
 
-require 'Pacientes.php';
-
+// Recogida de parámetros con POST (AJAX Fetch ECMAScript 6)
 $data = json_decode(file_get_contents('php://input'), true);
+$action = isset($data["action"])? $data["action"]:"";
+$filters = isset($data["filters"])? $data["filters"]:[];
+$arrMedico = isset($data["medico"])? $data["medico"]:[];
 
-$action = isset($data["action"]) ? $data["action"] : "";
-$id = isset($data["id"]) ? $data["id"] : "";
-$sip = isset($data["sip"]) ? $data["sip"] : "";
-$dni = isset($data["dni"]) ? $data["dni"] : "";
-$nombre = isset($data["nombre"]) ? $data["nombre"] : "";
-$apellido1 = isset($data["apellido1"]) ? $data["apellido1"] : "";
-
-$paciente = new Paciente($id,$sip,$dni,$nombre,$apellido1);
-
+// Inicialización de variables
 $success = true;
 $data = [];
 $msg = "";
 
+// Selección de la acción elegida
 try {
-
-    switch ($action) {
+    switch ($action){
         case "get":
-            $data = Paciente::find($filters);
-            $msg = "Listado de pacientes";
+            $data = Medico::find($filters);
+            $msg = "Listado de médicos";
             break;
-        /*case "delete":
-            $data = $paciente->delete();
-            $msg = "Paciente eliminado";
-            break;
+
         case "insert":
-            $paciente = new Paciente($arrPaciente["id"], $arrPaciente["sip"], $arrPaciente["dni"], $arrPaciente["nombre"], $arrPaciente["apellido1"]);
-            if ($data = $paciente->insert()) {
+            $medico = new Medico($arrMedico["sip"], $arrMedico["nombre"]);
+            if ($medico->insert()) {
                 $msg = "Médico insertado correctamente.";
             } else {
+                $success = false;
                 $msg = "Error al insertar el médico.";
             }
             break;
-        case "update":
-            $data = $paciente->editar();
-            $msg = "Médico editado correctamente";
-            break;
-        */
+
         default:
             $success = false;
             $data = [];
-            $msg = "No se identifica la acción";
-    }
+            $msg = "Opción no soportada.";
+        }
 } catch (Exception $e) {
     $success = false;
     $msg = $e->getMessage();
 }
 
 $salida = array(
-    "data" => $data,
-    "msg" => $msg,
-    "success" => $success
+	"data" => $data,
+	"msg" => $msg,
+	"success" => $success
 );
 
-echo json_encode($salida);
+// Verifica que no falle la codificación en el JSON
+if ($salida= json_encode($salida)){
+    echo $salida;
 
+} else {
+    $salida = array(
+        "data" => [],
+        "msg" => "Error al parsear el JSON",
+        "success" => false
+    );
+
+    echo json_encode($salida);
+}
