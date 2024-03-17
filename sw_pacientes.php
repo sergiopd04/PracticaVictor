@@ -24,23 +24,6 @@ try {
             $data = Paciente::find($filters);
             $msg = "Listado de pacientes";
             break;
-        /*case "delete":
-            $data = $paciente->delete();
-            $msg = "Paciente eliminado";
-            break;
-        case "insert":
-            $paciente = new Paciente($arrPaciente["id"], $arrPaciente["sip"], $arrPaciente["dni"], $arrPaciente["nombre"], $arrPaciente["apellido1"]);
-            if ($data = $paciente->insert()) {
-                $msg = "Médico insertado correctamente.";
-            } else {
-                $msg = "Error al insertar el médico.";
-            }
-            break;
-        case "update":
-            $data = $paciente->editar();
-            $msg = "Médico editado correctamente";
-            break;
-        */
         default:
             $success = false;
             $data = [];
